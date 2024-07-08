@@ -1,24 +1,31 @@
 package com.danal.assignment.reader;
 
+import com.danal.assignment.StoreInfoJobConfig;
 import com.danal.assignment.dto.StoreInfo;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.batch.item.ExecutionContext;
 import org.springframework.batch.item.file.FlatFileItemReader;
+import org.springframework.batch.test.MetaDataInstanceFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
+@SpringBootTest
 public class CsvItemReaderTest {
-    private FlatFileItemReader<StoreInfo> reader;
-
-    @BeforeEach
-    public void setUp() {
-        reader = CsvItemReader.of("src/main/resources/test.csv");
-        reader.open(new ExecutionContext());
-    }
+    @Autowired
+    StoreInfoJobConfig storeInfoJobConfig;
 
     @Test
     public void testRead() throws Exception {
+        //given
+        FlatFileItemReader<StoreInfo> reader = storeInfoJobConfig.storeItemReader("src/main/resources/test.csv");
+        reader.open(MetaDataInstanceFactory.createStepExecution().getExecutionContext());
+
+        //when
         StoreInfo storeInfo = reader.read();
+
+        //then
         assertThat(storeInfo.getStoreCode()).isEqualTo("MA0101202210A0084547");
         assertThat(storeInfo.getStoreName()).isEqualTo("금강산노래광장");
         assertThat(storeInfo.getBranchName()).isEqualTo("");
