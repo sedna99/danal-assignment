@@ -7,12 +7,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
-public class DatabaseItemProcessor implements ItemProcessor<StoreInfo, StoreInfo> {
+public class StoreItemProcessor implements ItemProcessor<StoreInfo, StoreInfo> {
+    int count = 0;
+
     @Autowired
     private StoreInfoRepository storeInfoRepository;
 
     @Override
-    public StoreInfo process(StoreInfo item) throws Exception {
+    public StoreInfo process(StoreInfo item) {
+        count++;
+        System.out.println("count: " + count);
         return storeInfoRepository.existsByStoreCode(item.getStoreCode()) ? null : item;
     }
 }

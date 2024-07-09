@@ -1,7 +1,7 @@
 package com.danal.assignment;
 
 import com.danal.assignment.dto.StoreInfo;
-import com.danal.assignment.processor.DatabaseItemProcessor;
+import com.danal.assignment.processor.StoreItemProcessor;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +19,7 @@ import org.springframework.batch.item.file.builder.FlatFileItemReaderBuilder;
 import org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
@@ -30,7 +31,7 @@ import javax.sql.DataSource;
 @Configuration
 @RequiredArgsConstructor
 public class StoreInfoJobConfig {
-    private final DatabaseItemProcessor databaseItemProcessor;
+    private final ApplicationContext ac;
     private final DataSource dataSource;
     @Bean
     public Job storeInfoJob(
@@ -38,21 +39,22 @@ public class StoreInfoJobConfig {
             PlatformTransactionManager transactionManager
     ){
         return new JobBuilder("storeInfoJob", jobRepository)
-                .start(step(jobRepository, transactionManager, null))
+                .start(storeInfoStep(jobRepository, transactionManager, null, null))
                 .build();
     }
 
     @Bean
     @JobScope
-    public Step step(
+    public Step storeInfoStep(
             JobRepository jobRepository,
             PlatformTransactionManager transactinManager,
-            @Value("#{jobParameters[filePath]}") String filePath
+            @Value("#{jobParameters[filePath]}") String filePath,
+            @Value("#{jobParameters[chunkSize]}") Long chunkSize
     ){
-        return new StepBuilder("step1", jobRepository)
-                .<StoreInfo, StoreInfo>chunk(100, transactinManager)
+        return new StepBuilder("storeInfoStep", jobRepository)
+                .<StoreInfo, StoreInfo>chunk(Math.toIntExact(chunkSize), transactinManager)
                 .reader(storeItemReader(filePath))
-                .processor(databaseItemProcessor)
+                .processor(storeItemProcessor())
                 .writer(storeItemWriter())
                 .build();
     }
@@ -77,6 +79,11 @@ public class StoreInfoJobConfig {
                     setTargetType(StoreInfo.class);
                 }})
                 .build();
+    }
+
+    @Bean
+    public StoreItemProcessor storeItemProcessor(){
+        return new StoreItemProcessor();
     }
 
     @Bean
