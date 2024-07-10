@@ -1,6 +1,9 @@
 package com.danal.assignment;
 
 import com.danal.assignment.dto.StoreInfo;
+import com.danal.assignment.listener.EmptyStepListener;
+import com.danal.assignment.listener.StoreInfoListener;
+import com.danal.assignment.policy.StoreInfoSkipPolicy;
 import com.danal.assignment.processor.StoreItemProcessor;
 
 import lombok.RequiredArgsConstructor;
@@ -9,9 +12,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.JobScope;
+import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
+import org.springframework.batch.integration.async.AsyncItemProcessor;
+import org.springframework.batch.integration.async.AsyncItemWriter;
+import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.database.JdbcBatchItemWriter;
 import org.springframework.batch.item.database.builder.JdbcBatchItemWriterBuilder;
 import org.springframework.batch.item.file.FlatFileItemReader;
@@ -23,9 +30,12 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.task.SimpleAsyncTaskExecutor;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.sql.DataSource;
+import java.util.concurrent.Future;
 
 @Slf4j
 @Configuration
@@ -56,6 +66,10 @@ public class StoreInfoJobConfig {
                 .reader(storeItemReader(filePath))
                 .processor(storeItemProcessor())
                 .writer(storeItemWriter())
+                .faultTolerant()
+                .skipPolicy(storeInfoSkipPolicy())
+                .listener(storeInfoListener())
+                .listener(emptyStepListener())
                 .build();
     }
 
@@ -94,6 +108,21 @@ public class StoreInfoJobConfig {
                         " values (:storeCode, :storeName, :branchName, :largeCategoryCode, :largeCategoryName, :mediumCategoryCode, :mediumCategoryName, :smallCategoryCode, :smallCategoryName, :standardIndustryCode, :standardIndustryName, :siDoCode, :siDoName, :siGunGuCode, :siGunGuName, :administrativeDongCode, :administrativeDongName, :legalDongCode, :legalDongName, :lotNumberCode, :landDivisionCode, :landDivisionName, :lotMainNumber, :lotSubNumber, :lotAddress, :roadNameCode, :roadName, :buildingMainNumber, :buildingSubNumber, :buildingManagementNumber, :buildingName, :roadNameAddress, :oldPostalCode, :newPostalCode, :dongInfo, :floorInfo, :roomInfo, :longitude, :latitude)")
                 .beanMapped()
                 .build();
+    }
+
+    @Bean
+    public EmptyStepListener emptyStepListener(){
+        return new EmptyStepListener();
+    }
+
+    @Bean
+    public StoreInfoListener storeInfoListener(){
+        return new StoreInfoListener();
+    }
+
+    @Bean
+    public StoreInfoSkipPolicy storeInfoSkipPolicy(){
+        return new StoreInfoSkipPolicy();
     }
 
     //remove warning message
