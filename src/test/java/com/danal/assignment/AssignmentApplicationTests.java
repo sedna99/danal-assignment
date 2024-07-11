@@ -46,7 +46,7 @@ class AssignmentApplicationTests {
 	@Test
 	void storeInfoJobTest() throws Exception {
 		JobParameters jobParameters = new JobParametersBuilder()
-				.addString("filePath", "/Users/sedna9/Desktop/danal/assignment/src/main/resources/test.csv")
+				.addString("filePath", "src/main/resources/test.csv")
 				.addLong("chunkSize", 100L)
 				.toJobParameters();
 
@@ -78,7 +78,7 @@ class AssignmentApplicationTests {
 	@Test
 	void alreadyCompletedErrorTest() throws Exception{
 		JobParameters jobParameters = new JobParametersBuilder()
-				.addString("filePath", "/Users/sedna9/Desktop/danal/assignment/src/main/resources/test.csv")
+				.addString("filePath", "src/main/resources/test.csv")
 				.addLong("chunkSize", 100L)
 				.toJobParameters();
 
