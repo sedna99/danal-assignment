@@ -9,7 +9,7 @@ import org.springframework.batch.item.file.FlatFileParseException;
 @Slf4j
 public class StoreInfoListener implements ItemReadListener<StoreInfo> {
     @OnReadError
-    public void onReadError(Exception e){
+    public void onReadError(Exception e) {
         if(e instanceof FlatFileParseException ffpe) {
             StringBuilder output = new StringBuilder()
                     .append("An exception occurred while processing the ")

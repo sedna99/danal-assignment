@@ -106,4 +106,46 @@ class AssignmentApplicationTests {
 		System.out.println("write count: " + stepExecution.getWriteCount());
 		assertThat(stepExecution.getWriteCount()).isEqualTo(199);
 	}
+
+	@Test
+	void emptyCsvExitStatusFailed() throws Exception{
+		JobParameters jobParameters = new JobParametersBuilder()
+				.addString("filePath", "src/main/resources/empty.csv")
+				.addLong("chunkSize", 100L)
+				.toJobParameters();
+
+		JobExecution jobExecution = jobLauncherTestUtils.launchJob(jobParameters);
+		StepExecution stepExecution = jobExecution.getStepExecutions().iterator().next();
+
+		assertThat(stepExecution.getReadCount()).isEqualTo(0);
+		assertThat(stepExecution.getWriteCount()).isEqualTo(0);
+		assertThat(stepExecution.getExitStatus()).isEqualTo(ExitStatus.FAILED);
+	}
+
+	@Test
+	void brokenCsvSkipTest() throws Exception {
+		JobParameters jobParameters = new JobParametersBuilder()
+				.addString("filePath", "src/main/resources/broken.csv")
+				.addLong("chunkSize", 100L)
+				.toJobParameters();
+
+		JobExecution jobExecution = jobLauncherTestUtils.launchJob(jobParameters);
+		StepExecution stepExecution = jobExecution.getStepExecutions().iterator().next();
+
+		assertThat(stepExecution.getReadCount()).isEqualTo(199);
+		System.out.println("read count: " + stepExecution.getReadCount());
+		System.out.println("write count: " + stepExecution.getWriteCount());
+		assertThat(stepExecution.getWriteCount()).isEqualTo(199);
+	}
+
+	@Test
+	void brokenCsvFailTest() throws Exception {
+		JobParameters jobParameters = new JobParametersBuilder()
+				.addString("filePath", "src/main/resources/broken2.csv")
+				.addLong("chunkSize", 100L)
+				.toJobParameters();
+
+		JobExecution jobExecution = jobLauncherTestUtils.launchJob(jobParameters);
+		assertThat(jobExecution.getExitStatus().getExitCode()).isEqualTo(ExitStatus.FAILED.getExitCode());
+	}
 }
