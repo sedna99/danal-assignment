@@ -22,12 +22,11 @@
 ## 설치
 - 프로젝트 클론
 ```sh
-git clone https://github.com/your-username/spring-batch-project.git
-cd spring-batch-project
-git checkout master
+git clone https://github.com/sedna99/danal-assignment.git
+cd danal-assignment
 ```
 - 프로젝트 빌드
-```sh
+```
 ./gradlew clean build
 ```
 
